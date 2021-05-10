@@ -676,27 +676,34 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      */
     final Node<K,V>[] resize() {
         Node<K,V>[] oldTab = table;
-        // 记录原table的长度
+        // 记录旧容量
         int oldCap = (oldTab == null) ? 0 : oldTab.length;
+        // 纪录旧阈值
         int oldThr = threshold;
-        // 定义newCap，记录新table的长度
+        // 定义newCap、newThr，记录新的容量和新的阈值
         int newCap, newThr = 0;
+        // 以前的容量大于0，代表已经初始化过了
         if (oldCap > 0) {
+            // table容量超过容量最大值时，不在进行扩容
             if (oldCap >= MAXIMUM_CAPACITY) {
                 threshold = Integer.MAX_VALUE;
                 return oldTab;
             }
+            // 按旧容量和阈值的两倍计算新容量和阈值
             else if ((newCap = oldCap << 1) < MAXIMUM_CAPACITY &&
                      oldCap >= DEFAULT_INITIAL_CAPACITY)
                 // 原来的容量*2
                 newThr = oldThr << 1; // double threshold
         }
         else if (oldThr > 0) // initial capacity was placed in threshold
+            // 初始化时，将阈值就是容量值
             newCap = oldThr;
         else {               // zero initial threshold signifies using defaults
+            // 调用无参的构造方法时，为默认容量16，阈值为默认容量与默认负载因子的乘积
             newCap = DEFAULT_INITIAL_CAPACITY;
             newThr = (int)(DEFAULT_LOAD_FACTOR * DEFAULT_INITIAL_CAPACITY);
         }
+        // 阈值为0是，按公式计算
         if (newThr == 0) {
             float ft = (float)newCap * loadFactor;
             newThr = (newCap < MAXIMUM_CAPACITY && ft < (float)MAXIMUM_CAPACITY ?
@@ -716,6 +723,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
                         // 链表中只有一个元素，直接将e放入新table
                         newTab[e.hash & (newCap - 1)] = e;
                     else if (e instanceof TreeNode)
+                        // 需要对红黑树进行拆分
                         ((TreeNode<K,V>)e).split(this, newTab, j, oldCap);
                     else { // preserve order
                         // loHead、loTail下标不变情况下的链表头和链表尾
@@ -723,8 +731,10 @@ public class HashMap<K,V> extends AbstractMap<K,V>
                         // hiHead、hiTail下标改变情况下的链表头和链表尾
                         Node<K,V> hiHead = null, hiTail = null;
                         Node<K,V> next;
+                        // 遍历链表，并将链表节点按原数据顺序进行分组
                         do {
                             next = e.next;
+                            // hash值 & 旧容量，将结果为0的放一组，不为0的放一组
                             if ((e.hash & oldCap) == 0) {
                                 if (loTail == null)
                                     loHead = e;
@@ -746,6 +756,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
                         }
                         if (hiTail != null) {
                             hiTail.next = null;
+                            // 下标改变了，
                             newTab[j + oldCap] = hiHead;
                         }
                     }
