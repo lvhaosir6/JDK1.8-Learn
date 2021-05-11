@@ -276,6 +276,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      * Basic hash bin node, used for most entries.  (See below for
      * TreeNode subclass, and in LinkedHashMap for its Entry subclass.)
      */
+    // 链表节点
     static class Node<K,V> implements Map.Entry<K,V> {
         final int hash;
         final K key;
@@ -336,7 +337,10 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      */
     static final int hash(Object key) {
         int h;
+        // key为null，则返回0
+        // key不为null，使用key的hashCode值 异或 key的hashCode值无符号右移16位的结果（实际：高16位异或低16位）
         return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
+        // 无符号右移16位是想让高低位都参与到Hash的计算中
     }
 
     /**
@@ -393,6 +397,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      * (We also tolerate length zero in some operations to allow
      * bootstrapping mechanics that are currently not needed.)
      */
+    // 数组桶
     transient Node<K,V>[] table;
 
     /**
@@ -1819,6 +1824,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      * extends Node) so can be used as extension of either regular or
      * linked node.
      */
+    // 红黑树节点
     static final class TreeNode<K,V> extends LinkedHashMap.Entry<K,V> {
         TreeNode<K,V> parent;  // red-black tree links
         TreeNode<K,V> left;
