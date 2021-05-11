@@ -225,6 +225,7 @@ public class LinkedHashMap<K,V>
         if (last == null)
             head = p;
         else {
+            // 将新节点连接在链表的尾部
             p.before = last;
             last.after = p;
         }
@@ -255,6 +256,7 @@ public class LinkedHashMap<K,V>
     Node<K,V> newNode(int hash, K key, V value, Node<K,V> e) {
         LinkedHashMap.Entry<K,V> p =
             new LinkedHashMap.Entry<K,V>(hash, key, value, e);
+        // 构建新节点的同时，将新节点链接在尾部
         linkNodeLast(p);
         return p;
     }

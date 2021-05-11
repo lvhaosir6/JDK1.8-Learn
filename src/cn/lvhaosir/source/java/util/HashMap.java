@@ -631,30 +631,40 @@ public class HashMap<K,V> extends AbstractMap<K,V>
                    boolean evict) {
         Node<K,V>[] tab; Node<K,V> p; int n, i;
         if ((tab = table) == null || (n = tab.length) == 0)
+            // table桶为空时，调用resize()进行初始化
             n = (tab = resize()).length;
+        // 计算桶下标index
         if ((p = tab[i = (n - 1) & hash]) == null)
+            // 该位置上没有值，直接添加
             tab[i] = newNode(hash, key, value, null);
         else {
             Node<K,V> e; K k;
+            // hash相等，key相同，直接覆盖value
             if (p.hash == hash &&
                 ((k = p.key) == key || (key != null && key.equals(k))))
                 e = p;
+            // 判断该链为红黑树
             else if (p instanceof TreeNode)
                 e = ((TreeNode<K,V>)p).putTreeVal(this, tab, hash, key, value);
             else {
+                // 遍历该链表
                 for (int binCount = 0; ; ++binCount) {
+                    // 如果找到尾部，则表明添加的key-value没有重复，在尾部进行添加
                     if ((e = p.next) == null) {
                         p.next = newNode(hash, key, value, null);
+                        // 链表长度大于8转换为红黑树进行处理
                         if (binCount >= TREEIFY_THRESHOLD - 1) // -1 for 1st
                             treeifyBin(tab, hash);
                         break;
                     }
+                    // 如果链表中有重复的key，e则为当前重复的节点，结束循环
                     if (e.hash == hash &&
                         ((k = e.key) == key || (key != null && key.equals(k))))
                         break;
                     p = e;
                 }
             }
+            // 有重复的key，则用待插入值进行覆盖，返回旧值
             if (e != null) { // existing mapping for key
                 V oldValue = e.value;
                 if (!onlyIfAbsent || oldValue == null)
@@ -664,6 +674,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
             }
         }
         ++modCount;
+        // 数据添加完毕后，进行判断是否需要扩容
         if (++size > threshold)
             resize();
         afterNodeInsertion(evict);
@@ -701,7 +712,8 @@ public class HashMap<K,V> extends AbstractMap<K,V>
                 newThr = oldThr << 1; // double threshold
         }
         else if (oldThr > 0) // initial capacity was placed in threshold
-            // 初始化时，将阈值就是容量值
+            // 如果oldCap<0，但是已经初始化了，像把元素删除完之后的情况，那么它的临界值肯定还存在，
+            // 初始容量设置为阈值
             newCap = oldThr;
         else {               // zero initial threshold signifies using defaults
             // 调用无参的构造方法时，为默认容量16，阈值为默认容量与默认负载因子的乘积
